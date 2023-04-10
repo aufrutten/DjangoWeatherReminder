@@ -1,0 +1,10 @@
+
+#Python and PyCharm
+.idea
+.DS_Store*
+__pycache__*
+*.pyc
+venv
+
+# Secret key, Email Config
+etc/
