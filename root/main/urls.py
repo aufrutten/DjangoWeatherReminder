@@ -22,3 +22,6 @@ urlpatterns = [path('admin/', admin.site.urls)]
 
 # <-----WeatherReminder----->
 urlpatterns += [path('', include('WeatherReminder.urls'))]
+
+# <-----API----->
+urlpatterns += [path('api-auth/', include('rest_framework.urls'))]
