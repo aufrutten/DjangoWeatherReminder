@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+from pyowm import OWM
+
 from .tools.etc import (DJANGO_CONFIG,
                         DATABASE_CONFIG,
                         CLOUDINARY_CONFIG,
@@ -151,3 +153,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+OWN = OWM(DJANGO_CONFIG["OWM_TOKEN_KEY"])
+MGR = OWN.weather_manager()

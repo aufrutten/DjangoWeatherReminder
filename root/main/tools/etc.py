@@ -23,7 +23,8 @@ if not DJANGO_FILE_CONFIG.exists():
                    "SECRET_KEY": "django-insecure-_____________________to_change____________________",
                    "EMAIL": "",
                    "EMAIL_PASSWORD": "",
-                   "ALLOWED_HOSTS": ('127.0.0.1',)}, js_file, indent=4)
+                   "ALLOWED_HOSTS": ('127.0.0.1',),
+                   "OWM_TOKEN_KEY": ""}, js_file, indent=4)
 
 
 if not DATABASE_FILE_CONFIG.exists():
