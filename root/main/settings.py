@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+from .tools.etc import (DJANGO_CONFIG,
+                        DATABASE_CONFIG,
+                        CLOUDINARY_CONFIG,
+                        GOOGLE_AUTH_CONFIG,
+                        GITHUB_AUTH_CONFIG)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
