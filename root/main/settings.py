@@ -35,12 +35,17 @@ EMAIL_HOST_PASSWORD = DJANGO_CONFIG['EMAIL_PASSWORD']
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4qtdo8awhtxxl50glsfzjt-wkv6*w0v#5xhi)1)fohs9yy6j_!'
+SECRET_KEY = DJANGO_CONFIG["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True if DJANGO_CONFIG["DEBUG"] == "True" else False
 
-ALLOWED_HOSTS = ()
+ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('127.0.0.1', '*')
+
+# HTTPS
+CSRF_COOKIE_SECURE = False if DEBUG else True
+SECURE_SSL_REDIRECT = False if DEBUG else True
+SESSION_COOKIE_SECURE = False if DEBUG else True
 
 
 # Application definition
