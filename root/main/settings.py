@@ -22,6 +22,15 @@ from .tools.etc import (DJANGO_CONFIG,
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+# Configuration SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = DJANGO_CONFIG['EMAIL']
+DEFAULT_FROM_EMAIL = DJANGO_CONFIG['EMAIL']
+EMAIL_HOST_PASSWORD = DJANGO_CONFIG['EMAIL_PASSWORD']
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
