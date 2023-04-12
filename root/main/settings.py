@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 
 from pyowm import OWM
 
@@ -126,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = (
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'europe/berlin'
 
 USE_I18N = True
 
@@ -152,3 +153,4 @@ REST_FRAMEWORK = {
 
 OWN = OWM(DJANGO_CONFIG["OWM_TOKEN_KEY"])
 MGR = OWN.weather_manager()
+FREQUENCY_UPDATE_DATA = timedelta(**DJANGO_CONFIG["FREQUENCY_UPDATE_DATA"])

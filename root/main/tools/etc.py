@@ -24,7 +24,9 @@ if not DJANGO_FILE_CONFIG.exists():
                    "EMAIL": "",
                    "EMAIL_PASSWORD": "",
                    "ALLOWED_HOSTS": ('127.0.0.1',),
-                   "OWM_TOKEN_KEY": ""}, js_file, indent=4)
+                   "OWM_TOKEN_KEY": "",
+                   "FREQUENCY_UPDATE_DATA": {"hours": 1, "minutes": 0}
+                   }, js_file, indent=4)
 
 
 if not DATABASE_FILE_CONFIG.exists():
