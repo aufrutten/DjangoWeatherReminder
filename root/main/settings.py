@@ -76,6 +76,7 @@ MIDDLEWARE = (
 )
 
 ROOT_URLCONF = 'main.urls'
+AUTH_USER_MODEL = 'WeatherReminder.User'
 
 TEMPLATES = (
     {
