@@ -1,0 +1,23 @@
+{% load static %}
+
+<nav class="navbar navbar-light bg-light shadow">
+    <div class="container-fluid">
+        <a href="" class="navbar-brand">
+            <img id="faviconMain" src="{% static 'base/img/logo.svg' %}" width="50px" alt="DjangoIco">
+            <label> DjangoWeatherReminder</label>
+        </a>
+        {% if request.user.id %}
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Account
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+{#                <li><a class="dropdown-item" href="{% url 'profile' request.user.id %}">Profile</a></li>#}
+{#                <li><a class="dropdown-item" href="{% url 'subscriptions' request.user.id %}">Subscriptions</a></li>#}
+{#                <li><a class="dropdown-item" href="{% url 'add_post' %}">Add Post</a></li>#}
+{#                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>#}
+            </ul>
+        </li>
+        {% endif %}
+    </div>
+</nav>

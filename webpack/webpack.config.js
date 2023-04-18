@@ -3,7 +3,7 @@ const path = require("path");
 module.exports = {
     entry: './src/index.js',
     output: {
-        path: path.resolve(__dirname, '../root', 'base_template', 'static', 'base', 'js'),
+        path: path.resolve(__dirname, '../root', 'base_template', 'static', 'base', 'js', 'bundle'),
         filename: 'bundle.js',
         clean: true,
     },

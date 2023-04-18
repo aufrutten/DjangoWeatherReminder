@@ -14,6 +14,7 @@ root/staticfiles/
 *.sqlite3
 uploads/
 webpack/node_modules/
+root/base_template/static/base/js/bundle
 
 
 #tests

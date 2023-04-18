@@ -4,3 +4,5 @@ import 'bootstrap/dist/js/bootstrap.js';
 
 import $ from 'jquery';
 window.$ = $;
+
+import './css/style.css';
