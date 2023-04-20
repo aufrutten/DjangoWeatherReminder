@@ -63,6 +63,8 @@ INSTALLED_APPS = (
     'WeatherReminder.apps.WeatherReminderConfig',
     'rest_framework',
     'rest_framework_simplejwt',
+    'crispy_forms',
+    'crispy_bootstrap5',
 )
 
 MIDDLEWARE = (
@@ -154,6 +156,7 @@ if (DEBUG is False) and (STATIC_ROOT.exists() is False):
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+LENGTH_OF_CODE_CONFIRM = 2 if DEBUG else 6
 
 
 REST_FRAMEWORK = {
@@ -165,3 +168,8 @@ REST_FRAMEWORK = {
 OWN = OWM(DJANGO_CONFIG["OWM_TOKEN_KEY"])
 MGR = OWN.weather_manager()
 FREQUENCY_UPDATE_DATA = timedelta(**DJANGO_CONFIG["FREQUENCY_UPDATE_DATA"])
+
+
+# Crispy
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
