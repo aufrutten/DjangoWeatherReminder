@@ -31,3 +31,7 @@ urlpatterns += [path('', include('WeatherReminder.urls'))]
 urlpatterns += [path('api-auth/', include('rest_framework.urls'))]
 urlpatterns += [path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair')]
 urlpatterns += [path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')]
+
+
+# <-----SocialDjangoAuthSystem----->
+urlpatterns += [url('', include('social_django.urls', namespace='social'))]

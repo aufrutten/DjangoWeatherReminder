@@ -65,6 +65,7 @@ INSTALLED_APPS = (
     'rest_framework_simplejwt',
     'crispy_forms',
     'crispy_bootstrap5',
+    'social_django',
 )
 
 MIDDLEWARE = (
@@ -80,6 +81,61 @@ MIDDLEWARE = (
 ROOT_URLCONF = 'main.urls'
 AUTH_USER_MODEL = 'WeatherReminder.User'
 
+AUTHENTICATION_BACKENDS = (
+    'main.tools.OAuth2.AppleIdAuth',
+    'main.tools.OAuth2.GithubOAuth2',
+    'main.tools.OAuth2.GoogleOAuth2',
+    'django.contrib.auth.backends.ModelBackend'
+)
+
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_URL = 'logout'
+LOGOUT_REDIRECT_URL = 'login'
+
+# URL NAMESPACE
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
+
+# Allow to create user by social django
+AUTH_PROFILE_MODULE = 'WeatherReminder.User'
+SOCIAL_AUTH_USER_MODEL = 'WeatherReminder.User'
+SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'confirm_code']
+SOCIAL_AUTH_CREATE_USERS = True
+SOCIAL_AUTH_EMAIL_AS_USERNAME = True
+
+# AppleID
+# TODO: To Configuru in future
+SOCIAL_AUTH_APPLE_ID_CLIENT = ''
+SOCIAL_AUTH_APPLE_ID_TEAM = ''
+SOCIAL_AUTH_APPLE_ID_KEY = ''
+SOCIAL_AUTH_APPLE_ID_SECRET = ''
+SOCIAL_AUTH_APPLE_ID_SCOPE = ['email', 'name']
+
+# GitHub
+GITHUB_AUTH_CONFIG = GITHUB_AUTH_CONFIG['DEV'] if DEBUG else GITHUB_AUTH_CONFIG['PROD']
+SOCIAL_AUTH_GITHUB_KEY = GITHUB_AUTH_CONFIG['client_id']
+SOCIAL_AUTH_GITHUB_SECRET = GITHUB_AUTH_CONFIG['client_secret']
+SOCIAL_AUTH_GITHUB_SCOPE = ['email', 'name']
+
+# Google
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = GOOGLE_AUTH_CONFIG['web']['client_id']
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = GOOGLE_AUTH_CONFIG['web']['client_secret']
+
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+)
+
+
 TEMPLATES = (
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -91,6 +147,8 @@ TEMPLATES = (
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -173,3 +231,5 @@ FREQUENCY_UPDATE_DATA = timedelta(**DJANGO_CONFIG["FREQUENCY_UPDATE_DATA"])
 # Crispy
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
