@@ -17,7 +17,6 @@ from pyowm import OWM
 
 from .tools.etc import (DJANGO_CONFIG,
                         DATABASE_CONFIG,
-                        CLOUDINARY_CONFIG,
                         GOOGLE_AUTH_CONFIG,
                         GITHUB_AUTH_CONFIG)
 
@@ -79,7 +78,6 @@ MIDDLEWARE = (
 )
 
 ROOT_URLCONF = 'main.urls'
-AUTH_USER_MODEL = 'WeatherReminder.User'
 
 AUTHENTICATION_BACKENDS = (
     'main.tools.OAuth2.AppleIdAuth',
@@ -90,7 +88,7 @@ AUTHENTICATION_BACKENDS = (
 
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'home'
 LOGOUT_URL = 'logout'
 LOGOUT_REDIRECT_URL = 'login'
 
@@ -99,6 +97,7 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
 
 # Allow to create user by social django
+AUTH_USER_MODEL = 'WeatherReminder.User'
 AUTH_PROFILE_MODULE = 'WeatherReminder.User'
 SOCIAL_AUTH_USER_MODEL = 'WeatherReminder.User'
 SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'confirm_code']

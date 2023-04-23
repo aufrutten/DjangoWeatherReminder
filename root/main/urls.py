@@ -34,4 +34,4 @@ urlpatterns += [path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
 
 
 # <-----SocialDjangoAuthSystem----->
-urlpatterns += [url('', include('social_django.urls', namespace='social'))]
+urlpatterns += [path('auth/', include('social_django.urls', namespace='social'))]
