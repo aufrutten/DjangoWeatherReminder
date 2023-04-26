@@ -14,6 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 
 from pyowm import OWM
+import geonamescache
+
 
 from .tools.etc import (DJANGO_CONFIG,
                         DATABASE_CONFIG,
@@ -225,6 +227,7 @@ REST_FRAMEWORK = {
 OWN = OWM(DJANGO_CONFIG["OWM_TOKEN_KEY"])
 MGR = OWN.weather_manager()
 FREQUENCY_UPDATE_DATA = timedelta(**DJANGO_CONFIG["FREQUENCY_UPDATE_DATA"])
+GC = geonamescache.GeonamesCache()
 
 
 # Crispy

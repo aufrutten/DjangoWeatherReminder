@@ -11,6 +11,7 @@ django-filter==23.1
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.2.2
 geojson==2.5.0
+geonamescache==1.6.0
 idna==3.4
 Markdown==3.4.3
 oauthlib==3.2.2
