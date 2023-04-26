@@ -2,7 +2,7 @@
 
 <nav class="navbar navbar-light bg-light shadow">
     <div class="container-fluid">
-        <a href="" class="navbar-brand">
+        <a href="{% url 'home' %}" class="navbar-brand">
             <img id="faviconMain" src="{% static 'base/img/logo.svg' %}" width="50px" alt="DjangoIco">
             <label> DjangoWeatherReminder</label>
         </a>
@@ -12,10 +12,10 @@
             Account
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-{#                <li><a class="dropdown-item" href="{% url 'profile' request.user.id %}">Profile</a></li>#}
-{#                <li><a class="dropdown-item" href="{% url 'subscriptions' request.user.id %}">Subscriptions</a></li>#}
-{#                <li><a class="dropdown-item" href="{% url 'add_post' %}">Add Post</a></li>#}
-{#                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>#}
+
+                <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
+                <li><a class="dropdown-item" href="https://google.com">Add City</a></li>
+                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
             </ul>
         </li>
         {% endif %}

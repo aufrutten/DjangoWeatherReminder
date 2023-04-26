@@ -102,7 +102,7 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 AUTH_USER_MODEL = 'WeatherReminder.User'
 AUTH_PROFILE_MODULE = 'WeatherReminder.User'
 SOCIAL_AUTH_USER_MODEL = 'WeatherReminder.User'
-SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'confirm_code']
+SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'code_confirm']
 SOCIAL_AUTH_CREATE_USERS = True
 SOCIAL_AUTH_EMAIL_AS_USERNAME = True
 

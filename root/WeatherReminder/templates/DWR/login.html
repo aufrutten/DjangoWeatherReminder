@@ -1,0 +1,37 @@
+{% extends 'base/index.html' %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+<div class="col-md-10 mx-auto col-lg-5" style="margin-top: 3%">
+    <div class="modal-content rounded-4 shadow">
+        <div class="modal-header p-5 pb-4 border-bottom-0">
+            <h1 class="fw-bold mb-0 fs-2">Sign in</h1>
+            <button type="reset" class="btn-close"></button>
+        </div>
+
+        <div class="modal-body p-5 pt-0">
+
+            {% crispy form %}
+
+            <a class="w-100 btn btn-lg btn-outline-secondary" href="{% url "register" %}">Sign up</a>
+            <small class="text-muted">By clicking Sign up, you agree to the terms of use.</small>
+            <hr class="my-4">
+            <h2 class="fs-5 fw-bold mb-3">Or use a third-party</h2>
+            <a class="w-100 py-2 mb-2 btn btn-outline-dark rounded-3" type="button" href="{% url 'social:begin' 'google-oauth2' %}" style="font-weight: bold">
+                <i class="bi bi-google" style="font-size: 20px"></i>
+                Sign up with Google
+            </a>
+            <a class="w-100 py-2 mb-2 btn btn-outline-secondary rounded-3" type="button" href="{% url 'social:begin' 'github' %}" style="font-weight: bold">
+                <i class="bi bi-github" style="font-size: 20px"></i>
+                Sign up with GitHub
+            </a>
+            <a class="w-100 py-2 mb-2 btn btn-dark rounded-3" type="button" href="#" style="font-weight: bold">
+                <i class="bi bi-apple" style="font-size: 20px"></i>
+                Sign up with AppleID
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,11 +1,12 @@
 from django.contrib import admin
 
 from . import models
+from . import forms
 
 
 @admin.register(models.City)
 class CityModel(admin.ModelAdmin):
-    readonly_fields = ('_weather', '_humidity', '_last_update', '_temperature')
+    pass
 
 
 @admin.register(models.User)
