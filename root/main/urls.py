@@ -16,21 +16,27 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect, reverse
 from rest_framework_simplejwt import views as jwt_views
 
 
+# <-----ROOT----->
+urlpatterns = [path('', lambda request: redirect(reverse('root')), name='root')]
+
+
 # <-----ADMIN----->
-urlpatterns = [path('admin/', admin.site.urls)]
+urlpatterns += [path('admin/', admin.site.urls, name='admin')]
 
 
 # <-----WeatherReminder----->
-urlpatterns += [path('', include('WeatherReminder.urls'))]
+urlpatterns += [path('WeatherReminder/', include('WeatherReminder.urls'))]
 
 
 # <-----API----->
 urlpatterns += [path('api-auth/', include('rest_framework.urls'))]
 urlpatterns += [path('api/token/', jwt_views.TokenObtainPairView.as_view(), name='token_obtain_pair')]
 urlpatterns += [path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh')]
+urlpatterns += [path('api/', include('WeatherReminder.API'), name='api')]
 
 
 # <-----SocialDjangoAuthSystem----->

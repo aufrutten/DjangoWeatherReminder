@@ -28,5 +28,7 @@ urlpatterns = [
     path('home/', views.home, name='home'),
     path('profile/', views.profile, name='profile'),
 
-    path('city/<str:city_name>', views.city, name="city")
+    path('city/', views.add_city, name='add_city'),
+    path('city/<str:city_name>', views.city, name="city"),
+    path('subscriptions/', views.subscriptions, name='subscriptions'),
 ]

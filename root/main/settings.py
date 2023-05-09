@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
+from rest_framework.settings import api_settings
+
 from pyowm import OWM
 import geonamescache
 
@@ -25,16 +27,6 @@ from .tools.etc import (DJANGO_CONFIG,
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Configuration SMTP
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = DJANGO_CONFIG['EMAIL']
-DEFAULT_FROM_EMAIL = DJANGO_CONFIG['EMAIL']
-EMAIL_HOST_PASSWORD = DJANGO_CONFIG['EMAIL_PASSWORD']
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -44,7 +36,7 @@ SECRET_KEY = DJANGO_CONFIG["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if DJANGO_CONFIG["DEBUG"] == "True" else False
 
-ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('127.0.0.1', '*')
+ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('*', )
 
 # HTTPS
 CSRF_COOKIE_SECURE = False if DEBUG else True
@@ -218,9 +210,24 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LENGTH_OF_CODE_CONFIRM = 2 if DEBUG else 6
 
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = DJANGO_CONFIG['EMAIL']
+DEFAULT_FROM_EMAIL = DJANGO_CONFIG['EMAIL']
+EMAIL_HOST_PASSWORD = DJANGO_CONFIG['EMAIL_PASSWORD']
+
+
 REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        api_settings.DEFAULT_AUTHENTICATION_CLASSES,
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        api_settings.DEFAULT_FILTER_BACKENDS,
     ],
 }
 
