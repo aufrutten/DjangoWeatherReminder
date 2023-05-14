@@ -5,11 +5,12 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 
 from . import forms
 from . import tools
 from . import models
+from . import reminder
 
 
 @login_required
@@ -19,6 +20,7 @@ def subscriptions(request: WSGIRequest):
         if not form.is_valid():
             return render(request, 'DWR/subscriptions.html.html', context={'form': form})
         form.save()
+        reminder.reminder.add_to_queue(models.User.objects.get(email=request.user))
         return redirect(reverse('home'))
     return render(request, 'DWR/subscriptions.html', context={'form': forms.SubscriptionsForm(instance=request.user)})
 
@@ -45,6 +47,7 @@ def profile(request: WSGIRequest):
         form = forms.EditProfileForm(request.POST, instance=request.user)
         if not form.is_valid():
             return render(request, 'DWR/profile.html', context={'form': form})
+        reminder.reminder.add_to_queue(models.User.objects.get(email=request.user))
         form.save()
     return render(request, 'DWR/profile.html', context={'form': forms.EditProfileForm(instance=request.user)})
 
@@ -52,7 +55,8 @@ def profile(request: WSGIRequest):
 @login_required
 def home(request: WSGIRequest):
     subscriptions_list = get_object_or_404(models.User, email=request.user).subscriptions.all()
-    return render(request, 'DWR/home.html', context={'subscriptions': subscriptions_list})
+    queue_list = reminder.reminder.list_of_users
+    return render(request, 'DWR/home.html', context={'subscriptions': subscriptions_list, 'queue_list': queue_list})
 
 
 @tools.anonymous_required
@@ -92,6 +96,7 @@ def email_confirm(request: WSGIRequest, email):
             return redirect(reverse('register'))
 
         form.save()
+        reminder.reminder.add_to_queue(user)
         return redirect(reverse('login'))
     return render(request, 'DWR/email_confirm.html', context={'email': user.email, 'form': forms.ConfirmEmailForm()})
 
@@ -101,7 +106,7 @@ def register(request):
     if request.method == "POST":
         form = forms.SignUpForm(request.POST)
         if form.is_valid():
-            asyncio.run(form.async_save())
+            async_to_sync(form.async_save, force_new_loop=True)()
             return redirect(reverse('confirm_email', args=[form.cleaned_data.get('email')]))
         return render(request, 'DWR/register.html', context={'form': form})
     return render(request, 'DWR/register.html', context={'form': forms.SignUpForm()})

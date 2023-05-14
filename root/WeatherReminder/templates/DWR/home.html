@@ -6,35 +6,55 @@
     <br>
     <br>
     <div class="col-md-10 mx-auto col-lg-5" style="margin-top: 2%">
-    <div class="modal-content rounded-4 shadow">
-        <div class="modal-header p-5 pb-4 border-bottom-0">
-            <h1 class="fw-bold mb-0 fs-2">City's</h1>
-        </div>
-        <div class="modal-body p-5 pt-0">
-            <br>
-            <table style="margin-left: auto; margin-right: auto; margin-top: 10%; text-align: center" class="table table-striped">
-                <tr>
-                    <th>Name</th>
-                    <th>Temperature</th>
-                    <th>Humidity</th>
-                    <th>Weather</th>
-                </tr>
-            {% if subscriptions %}
-            {% for city in subscriptions %}
-                <tr>
-                    <th id="name_city"><a href="{% url "city" city.city %}" style="color: black; text-decoration: None">{{ city.city }}</a></th>
-                    <th id="temperature_city">{{ city.temperature }}°C</th>
-                    <th id="humidity_city">{{ city.humidity }}%</th>
-                    <th id="weather_city">{{ city.weather }}</th>
-                </tr>
-            {% endfor %}
-            {% else %}
-                <h2>Nothing yet</h2>
-            {% endif %}
-            </table>
-            <hr class="my-4">
-            <small class="text-muted">Hallo Welt! gemacht zu Deutschland, in einem vereinten Europa</small>
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header p-5 pb-4 border-bottom-0">
+                <h1 class="fw-bold mb-0 fs-2">City's</h1>
+            </div>
+            <div class="modal-body p-5 pt-0">
+                <br>
+                <table style="margin-left: auto; margin-right: auto; margin-top: 10%; text-align: center" class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>Temperature</th>
+                        <th>Humidity</th>
+                        <th>Weather</th>
+                    </tr>
+                {% if subscriptions %}
+                {% for city in subscriptions %}
+                    <tr>
+                        <th id="name_city"><a href="{% url "city" city.city %}" style="color: black; text-decoration: None">{{ city.city }}</a></th>
+                        <th id="temperature_city">{{ city.temperature }}°C</th>
+                        <th id="humidity_city">{{ city.humidity }}%</th>
+                        <th id="weather_city">{{ city.weather }}</th>
+                    </tr>
+                {% endfor %}
+                {% else %}
+                    <h2>Nothing yet</h2>
+                {% endif %}
+                </table>
+
+                {% if request.user.is_staff %}
+                    <table style="margin-left: auto; margin-right: auto; margin-top: 10%; text-align: center" class="table table-striped">
+                    <tr>
+                        <th>Name</th>
+                        <th>next notif</th>
+                    </tr>
+                    {% if queue_list %}
+                        {% for user in queue_list %}
+                        <tr>
+                            <th>{{ user.email }}</th>
+                            <th>{{ user.next_notifications }}</th>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <h2>Nothing yet</h2>
+                    {% endif %}
+                    </table>
+                {% endif %}
+
+                <hr class="my-4">
+                <small class="text-muted">Hallo Welt! gemacht zu Deutschland, in einem vereinten Europa</small>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}

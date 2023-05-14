@@ -44,6 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get', 'update', 'put', 'options'], permission_classes=[IsAuthenticated])
     def me(self, request):
+        print(self.request.method)
         if self.request.method == "PUT":
             user = UserSerializer(instance=get_object_or_404(User, email=request.user),
                                   context={'request': request},
@@ -51,7 +52,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user.save() if user.is_valid() else 0
             return Response(user.data)
 
-        user = UserSerializer(get_object_or_404(User, email=request.user), context={'request': request})
+        user = UserSerializer(instance=get_object_or_404(User, email=request.user), context={'request': request})
         return Response(user.data)
 
 

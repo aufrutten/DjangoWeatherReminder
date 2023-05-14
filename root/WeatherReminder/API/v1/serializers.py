@@ -1,7 +1,9 @@
 from django.contrib.auth.password_validation import validate_password as val_pass
 from django.conf import settings
 from rest_framework import serializers
+
 from WeatherReminder.models import User, City
+import WeatherReminder.reminder
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -20,6 +22,13 @@ class CreateUserSerializer(serializers.ModelSerializer):
         if validated_data.get('password'):
             instance.set_password(validated_data.get('password'))
             del validated_data['password']
+
+        if validated_data.get('notification_is_enable'):
+            WeatherReminder.reminder.reminder.add_to_queue(instance)
+
+        else:
+            WeatherReminder.reminder.reminder.remove_from_queue(instance)
+
         return super().update(instance, validated_data)
 
     def create(self, validated_data):

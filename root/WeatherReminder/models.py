@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
 
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 from . import tools
 
 
@@ -140,13 +140,18 @@ class User(AbstractUser):
     code_confirm = models.CharField(null=True, max_length=6)
     subscriptions = models.ManyToManyField("City", blank=True)
 
-    notification_is_enable = models.BooleanField(choices=((True, True), (False, False)), default=True)
+    notification_is_enable = models.BooleanField(default=True)
     frequency_update = models.IntegerField(choices=((1, 1), (3, 3), (6, 6), (12, 12)), default=1, null=False)
     latest_notifications = models.DateTimeField()
     next_notifications = models.DateTimeField()
 
     def __str__(self):
         return f'{self.email}'
+
+    def __lt__(self, other):
+        if not isinstance(other, User):
+            raise TypeError('must use Weather.models.User model')
+        return self.next_notifications < other.next_notifications
 
     async def reset_counter_of_recent_notifications(self):
         if self.frequency_update and self.notification_is_enable:
@@ -155,13 +160,13 @@ class User(AbstractUser):
             await self.asave()
 
     async def send_notifications(self):
-        if timezone.now() >= self.next_notifications:
-            response = []
-            async for city in self.subscriptions.all():
-                await response.append(f'{city.city}: weather: {city.weather} temp: {city.temperature}\n')
-            response = ''.join(response)
-
+        if timezone.now() >= self.next_notifications and await self.subscriptions.afirst() and self.is_active:
+            response = await sync_to_async(self.generate_response)()
             await sync_to_async(self.email_user)("DjangoWeatherReminder Notification", response)
-            await self.reset_counter_of_recent_notifications()
+        await self.reset_counter_of_recent_notifications()
 
-
+    def generate_response(self):
+        response = []
+        for city in self.subscriptions.all():
+            response.append(f'{city.city}: weather: {city.weather} temp: {city.temperature}\n')
+        return '\n'.join(response)

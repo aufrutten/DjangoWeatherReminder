@@ -10,6 +10,7 @@ __all__ = (
 
 import string
 from datetime import date
+import asyncio
 
 from django.core.handlers.wsgi import WSGIRequest
 from django import forms
@@ -105,7 +106,7 @@ class SignUpForm(forms.ModelForm):
         data = self.pre_save_data()
         return User.objects.create_user(**data)
 
-    async def async_save(self, commit=True):
+    async def async_save(self):
         data = self.pre_save_data()
         return await User.objects.acreate_user(**data)
 
@@ -148,14 +149,15 @@ class EditProfileForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'notification_is_enable', 'frequency_update')
 
     def __init__(self, *args, **kwargs):
+        # TODO: change notification_is_enable field
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
-                PrependedText('first_name', 'Name'),
-                PrependedText('last_name', 'Surname'),
-                PrependedText('notification_is_enable', 'Notification'),
-                PrependedText('frequency_update', 'Frequency'),
+            PrependedText('first_name', 'Name'),
+            PrependedText('last_name', 'Surname'),
+            PrependedText('frequency_update', 'Frequency'),
+            Div('notification_is_enable', wrapper_class='checkbox mb-3'),
         )
         self.helper.add_input(Submit('submit', 'Edit', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary'))
         super().__init__(*args, **kwargs)
