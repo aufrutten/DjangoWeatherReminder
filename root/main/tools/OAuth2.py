@@ -15,7 +15,7 @@ class GoogleOAuth2(google.GoogleOAuth2, ABC):
         return {'email': response['email'],
                 'first_name': response.get('given_name', ' '),
                 'last_name': response.get('family_name', ' '),
-                'code_confirm': generate_code(),
+                'is_active': True
                 }
 
     def get_birthday(self, response):
@@ -35,7 +35,7 @@ class GithubOAuth2(github.GithubOAuth2, ABC):
         return {'email': response['email'],
                 'first_name': response.get('name', ' '),
                 'last_name': response.get('surname', 'GitHub'),
-                'code_confirm': generate_code(),
+                'is_active': True
                 }
 
 

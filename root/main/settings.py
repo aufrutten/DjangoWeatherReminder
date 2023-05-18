@@ -94,7 +94,7 @@ SOCIAL_AUTH_URL_NAMESPACE = 'social'
 AUTH_USER_MODEL = 'WeatherReminder.User'
 AUTH_PROFILE_MODULE = 'WeatherReminder.User'
 SOCIAL_AUTH_USER_MODEL = 'WeatherReminder.User'
-SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'code_confirm']
+SOCIAL_AUTH_USER_FIELDS = ['first_name', 'last_name', 'email', 'is_active']
 SOCIAL_AUTH_CREATE_USERS = True
 SOCIAL_AUTH_EMAIL_AS_USERNAME = True
 
@@ -110,7 +110,7 @@ SOCIAL_AUTH_APPLE_ID_SCOPE = ['email', 'name']
 GITHUB_AUTH_CONFIG = GITHUB_AUTH_CONFIG['DEV'] if DEBUG else GITHUB_AUTH_CONFIG['PROD']
 SOCIAL_AUTH_GITHUB_KEY = GITHUB_AUTH_CONFIG['client_id']
 SOCIAL_AUTH_GITHUB_SECRET = GITHUB_AUTH_CONFIG['client_secret']
-SOCIAL_AUTH_GITHUB_SCOPE = ['email', 'name']
+SOCIAL_AUTH_GITHUB_SCOPE = ['email', 'name', 'is_active']
 
 # Google
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = GOOGLE_AUTH_CONFIG['web']['client_id']
@@ -181,7 +181,7 @@ AUTH_PASSWORD_VALIDATORS = (
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'europe/berlin'
+TIME_ZONE = 'Europe/Berlin'
 
 USE_I18N = True
 

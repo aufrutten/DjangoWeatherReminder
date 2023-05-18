@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  django:
+    build: .
+    volumes:
+      - .:/django
+    ports:
+      - "8000:8000"
+    image: app:django
+    container_name: django_container
+    command: ./start

@@ -15,7 +15,7 @@ default_config_JSON = {
     "SECRET_KEY": "django-insecure-_____________________to_change____________________",
     "EMAIL": "",
     "EMAIL_PASSWORD": "",
-    "ALLOWED_HOSTS": ('127.0.0.1',),
+    "ALLOWED_HOSTS": ('127.0.0.1', '0.0.0.0'),
     "OWM_TOKEN_KEY": "",
     "FREQUENCY_UPDATE_DATA": {
         "hours": 1,
@@ -65,4 +65,10 @@ with DJANGO_FILE_CONFIG.open(mode='r') as js_file:
 DATABASE_CONFIG = DJANGO_CONFIG['DATABASE']
 GOOGLE_AUTH_CONFIG = DJANGO_CONFIG['GOOGLE_AUTH']
 GITHUB_AUTH_CONFIG = DJANGO_CONFIG['GITHUB_AUTH']
+
+if not Path(DATABASE_CONFIG['default']['NAME']).parent.exists():
+    if DATABASE_CONFIG['default']['ENGINE'] == 'django.db.backends.sqlite3':
+        DATABASE_CONFIG['default']['NAME'] = str(BASE_DIR / 'database.sqlite3')
+        with DJANGO_FILE_CONFIG.open(mode='w') as js_file:
+            json.dump(DJANGO_CONFIG, js_file, indent=4)
 

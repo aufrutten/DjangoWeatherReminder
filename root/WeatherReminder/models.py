@@ -102,7 +102,7 @@ class UserManager(BaseUserManager):
         user.latest_notifications = timezone.now()
         user.next_notifications = timezone.now() + timedelta(hours=user.frequency_update)
         user.set_password(password)
-        user.is_active = False
+        user.is_active = kwargs.get('is_active', False)
         return user
 
     def create_user(self, email, password=None, **kwargs):

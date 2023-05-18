@@ -1,0 +1,6 @@
+#!/bin/bash
+
+python3 root/manage.py migrate
+python3 root/manage.py collectstatic --noinput
+python3 root/manage.py test || exit
+python3 root/manage.py runserver 0.0.0.0:8000

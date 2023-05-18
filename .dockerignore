@@ -1,0 +1,17 @@
+#Python and PyCharm
+venv
+.idea
+.DS_Store
+__pycache__*
+webpack/node_modules/
+
+#media files, and configurations
+root/media/
+root/staticfiles/
+database.sqlite3
+uploads/
+
+#tests
+.coverage*
+.pytest_cache*
+htmlcov

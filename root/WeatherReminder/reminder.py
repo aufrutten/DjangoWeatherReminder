@@ -3,6 +3,7 @@ import time
 import threading
 import bisect
 
+import django
 from django.utils import timezone
 from asgiref.sync import sync_to_async, async_to_sync
 
@@ -56,4 +57,8 @@ class Reminder:
         self.status_loop = False
 
 
-reminder = Reminder()
+try:
+    reminder = Reminder()
+
+except django.db.utils.OperationalError:
+    pass
