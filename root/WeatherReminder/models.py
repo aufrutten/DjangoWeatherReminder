@@ -1,3 +1,4 @@
+import threading
 from datetime import timedelta
 
 from django.db import models
@@ -5,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from django.core.mail import send_mail
 from django.utils import timezone
 
 from asgiref.sync import sync_to_async, async_to_sync
@@ -152,6 +154,14 @@ class User(AbstractUser):
         if not isinstance(other, User):
             raise TypeError('must use Weather.models.User model')
         return self.next_notifications < other.next_notifications
+
+    def email_user(self, subject, message, from_email=None, **kwargs):
+        args = {'subject': subject,
+                'message': message,
+                'from_email': from_email,
+                'recipient_list': [self.email],
+                **kwargs}
+        threading.Thread(target=send_mail, kwargs=args).start()
 
     async def reset_counter_of_recent_notifications(self):
         if self.frequency_update and self.notification_is_enable:

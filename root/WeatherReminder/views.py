@@ -80,12 +80,12 @@ def login(request: WSGIRequest):
 
 @tools.anonymous_required
 def email_confirm(request: WSGIRequest, email):
-    user = get_object_or_404(models.User, email=email)
-
-    if user.is_active:
-        return redirect(reverse('login'))
-
     if request.method == "POST":
+        user = get_object_or_404(models.User, email=email)
+
+        if user.is_active:
+            return redirect(reverse('login'))
+
         form = forms.ConfirmEmailForm(request.POST, instance=user)
 
         if not form.is_valid():
@@ -98,7 +98,7 @@ def email_confirm(request: WSGIRequest, email):
         form.save()
         reminder.reminder.add_to_queue(user)
         return redirect(reverse('login'))
-    return render(request, 'DWR/email_confirm.html', context={'email': user.email, 'form': forms.ConfirmEmailForm()})
+    return render(request, 'DWR/email_confirm.html', context={'email': email, 'form': forms.ConfirmEmailForm()})
 
 
 @tools.anonymous_required
@@ -106,7 +106,7 @@ def register(request):
     if request.method == "POST":
         form = forms.SignUpForm(request.POST)
         if form.is_valid():
-            async_to_sync(form.async_save, force_new_loop=True)()
+            form.save()
             return redirect(reverse('confirm_email', args=[form.cleaned_data.get('email')]))
         return render(request, 'DWR/register.html', context={'form': form})
     return render(request, 'DWR/register.html', context={'form': forms.SignUpForm()})
