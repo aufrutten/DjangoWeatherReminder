@@ -1,17 +1,37 @@
+
 #Python and PyCharm
 venv
 .idea
 .DS_Store
-__pycache__*
 webpack/node_modules/
+*.pyc
+__pycache__
+.pytest_cache
+.mypy_cache
 
-#media files, and configurations
+
+#logs
+logs/
+*.log
+
+
+#media and static files
 root/media/
 root/staticfiles/
-database.sqlite3
 uploads/
+
 
 #tests
 .coverage*
 .pytest_cache*
-htmlcov
+htmlcov*
+
+
+# databases and config
+.git/
+etc/
+*.db
+*.sqlite3
+*.mysql
+*.postgresql
+
