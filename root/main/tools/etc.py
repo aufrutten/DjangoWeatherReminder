@@ -16,6 +16,7 @@ default_config_JSON = {
     "EMAIL": "",
     "EMAIL_PASSWORD": "",
     "ALLOWED_HOSTS": ('127.0.0.1', '0.0.0.0'),
+    "ADMINS": [["Full_name", "example@example.com"]],
     "OWM_TOKEN_KEY": "",
     "FREQUENCY_UPDATE_DATA": {
         "hours": 1,

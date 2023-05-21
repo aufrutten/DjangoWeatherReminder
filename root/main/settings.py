@@ -208,6 +208,7 @@ if (DEBUG is False) and (STATIC_ROOT.exists() is False):
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LENGTH_OF_CODE_CONFIRM = 2 if DEBUG else 6
+ADMINS = DJANGO_CONFIG['ADMINS']
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
