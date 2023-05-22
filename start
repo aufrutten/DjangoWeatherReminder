@@ -1,6 +1,7 @@
 #!/bin/bash
 
-python3 root/manage.py migrate
-python3 root/manage.py collectstatic --noinput
-python3 root/manage.py test || exit
-python3 root/manage.py runserver 0.0.0.0:8000
+cd root || exit
+python3 manage.py migrate
+python3 manage.py collectstatic --noinput
+python3 manage.py test || exit
+gunicorn --bind 0.0.0.0:8000 main.wsgi
