@@ -21,14 +21,14 @@ class CityQuerySet(models.query.QuerySet):
 
     def create(self, **kwargs):
         kwargs['_last_update'] = timezone.now()
-        kwargs['city'] = kwargs.get('city', '').title()
+        kwargs['city'] = kwargs.get('city', '').title().strip()
         if settings.GC.get_cities_by_name(kwargs['city']):
             return super().create(**kwargs)
         raise CityNotExist(f"city: '{kwargs['city']}' isn't exist")
 
     def get(self, *args, **kwargs):
         if kwargs.get('city'):
-            kwargs['city'] = kwargs.get('city', '').title()
+            kwargs['city'] = kwargs.get('city', '').title().strip()
         return super().get(*args, **kwargs)
 
 

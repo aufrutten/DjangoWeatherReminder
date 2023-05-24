@@ -193,5 +193,5 @@ class AddCityForm(forms.Form):
 
     def clean_city(self):
         if settings.GC.get_cities_by_name(self.data.get('city', '').title()):
-            return self.data['city'].title()
+            return self.data['city'].title().strip()
         raise ValidationError("That city isn't exist")
