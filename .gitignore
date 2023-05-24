@@ -24,3 +24,5 @@ htmlcov
 # Secret key, Email Config
 etc/
 data/
+certbot/
+certbot_www/

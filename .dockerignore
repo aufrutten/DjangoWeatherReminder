@@ -35,4 +35,5 @@ etc/
 *.mysql
 *.postgresql
 data/
-
+certbot/
+certbot_www/

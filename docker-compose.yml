@@ -21,9 +21,23 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    expose:
+      - 80
+      - 443
     volumes:
       - static:/var/www/html/static/
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+
+  certbot:
+    image: certbot/certbot:latest
+    depends_on:
+      - nginx
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot_www:/var/www/certbot
+    entrypoint: sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot --email your-aufrutten@gmail.com --agree-tos --no-eff-email -d aufrutten.com -d www.aufrutten.com"
 
 volumes:
   static:
