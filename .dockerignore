@@ -34,4 +34,5 @@ etc/
 *.sqlite3
 *.mysql
 *.postgresql
+data/
 
