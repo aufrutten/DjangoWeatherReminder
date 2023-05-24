@@ -36,7 +36,7 @@ services:
       - nginx
     volumes:
       - ./certbot/conf:/etc/letsencrypt
-      - ./certbot_www:/var/www/certbot
+      - ./certbot/www:/var/www/certbot
     entrypoint: sh -c "certbot certonly --webroot --webroot-path=/var/www/certbot --email your-aufrutten@gmail.com --agree-tos --no-eff-email -d aufrutten.com -d www.aufrutten.com"
 
 volumes:
