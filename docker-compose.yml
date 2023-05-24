@@ -15,6 +15,7 @@ services:
 
   nginx:
     image: nginx:latest
+    restart: unless-stopped
     depends_on:
       - django
     ports:
