@@ -47,3 +47,5 @@ services:
 volumes:
   static:
 
+networks:
+  network:
