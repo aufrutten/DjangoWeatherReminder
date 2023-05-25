@@ -1,8 +1,0 @@
-FROM nginx:latest
-WORKDIR /django
-COPY ./start_nginx .
-RUN chmod +x ./start_nginx
-RUN apt-get update
-RUN apt-get install certbot -y
-RUN apt-get install python3-certbot-nginx -y
-
