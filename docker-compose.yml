@@ -19,6 +19,7 @@ services:
     restart: unless-stopped
     depends_on:
       - django
+      - certbot
     ports:
       - "80:80"
       - "443:443"
@@ -30,15 +31,15 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+      - ./certbot/ssl:/etc/nginx/ssl
 
   certbot:
     container_name: certbot
     image: certbot/certbot:latest
-    depends_on:
-      - nginx
     volumes:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+      - ./certbot/ssl:/etc/nginx/ssl
     command: certonly --webroot --webroot-path=/var/www/certbot
       --email aufrutten@gmail.com --agree-tos --no-eff-email
       -d aufrutten.com -d www.aufrutten.com
