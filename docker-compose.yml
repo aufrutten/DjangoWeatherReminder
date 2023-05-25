@@ -25,6 +25,8 @@ services:
     volumes:
       - static:/var/www/html/static/
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
 
   certbot:
     container_name: certbot
@@ -32,9 +34,9 @@ services:
     depends_on:
       - nginx_http
     volumes:
-      - etc-letsencrypt:/etc/letsencrypt
-      - www-html:/var/www/html
-    command: certonly --webroot --webroot-path=/var/www/html
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot
       --email aufrutten@gmail.com --agree-tos --no-eff-email
       -d aufrutten.com --renew-by-default
 
@@ -53,10 +55,8 @@ services:
     volumes:
       - static:/var/www/html/static/
       - ./nginx-ssl.conf:/etc/nginx/nginx.conf
-      - www-html:/var/www/html/
-      - etc-letsencrypt:/etc/letsencrypt
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
 
 volumes:
   static:
-  www-html:
-  etc-letsencrypt:
