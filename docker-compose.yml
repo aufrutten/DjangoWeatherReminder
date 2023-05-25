@@ -11,7 +11,6 @@ services:
     expose:
       - 8000
     container_name: django
-    command: ./start
 
   nginx:
     container_name: nginx
@@ -29,20 +28,20 @@ services:
     volumes:
       - static:/var/www/html/static/
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/ssl:/etc/nginx/ssl
+      - etc-letsencrypt:/etc/letsencrypt
+      - www-html:/var/www/html
 
   certbot:
     container_name: certbot
     image: certbot/certbot:latest
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-      - ./certbot/ssl:/etc/nginx/ssl
-    command: certonly --webroot --webroot-path=/var/www/certbot
+      - etc-letsencrypt:/etc/letsencrypt
+      - www-html:/var/www/html
+    command: certonly --standalone --webroot-path=/var/www/html
       --email aufrutten@gmail.com --agree-tos --no-eff-email
-      -d aufrutten.com -d www.aufrutten.com
+      -d aufrutten.com
 
 volumes:
   static:
+  www-html:
+  etc-letsencrypt:

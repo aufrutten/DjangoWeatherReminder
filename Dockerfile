@@ -7,3 +7,4 @@ COPY . .
 RUN chmod +x ./start
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
+CMD ["./start"]
