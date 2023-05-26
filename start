@@ -4,4 +4,4 @@ cd root || exit
 python3 manage.py migrate
 python3 manage.py collectstatic --noinput
 python3 manage.py test || exit
-gunicorn --bind 0.0.0.0:8000 main.wsgi
+gunicorn --bind 0.0.0.0:8000 main.wsgi --forwarded-allow-ips="*"
