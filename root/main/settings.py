@@ -39,9 +39,9 @@ DEBUG = True if DJANGO_CONFIG["DEBUG"] == "True" else False
 ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('*', )
 
 # HTTPS
-CSRF_COOKIE_SECURE = False if DEBUG else True
-SECURE_SSL_REDIRECT = False if DEBUG else True
-SESSION_COOKIE_SECURE = False if DEBUG else True
+# CSRF_COOKIE_SECURE = False if DEBUG else True
+# SECURE_SSL_REDIRECT = False if DEBUG else True
+# SESSION_COOKIE_SECURE = False if DEBUG else True
 
 
 # Application definition
