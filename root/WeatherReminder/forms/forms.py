@@ -47,7 +47,7 @@ class SignInForm(forms.Form):
             FloatingField('email', css_class='form-floating mb-3'),
             FloatingField('password', css_class='form-floating mb-3'),
             Div('remember_me', wrapper_class='checkbox mb-3'),
-            Submit('submit', 'Sing up', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary')
+            Submit('submit', 'Sing in', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary')
         )
         super().__init__(*args, **kwargs)
 
