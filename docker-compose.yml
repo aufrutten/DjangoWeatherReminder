@@ -6,8 +6,6 @@ services:
     volumes:
       - .:/django
       - static:/django/root/staticfiles
-    ports:
-      - "8000:8000"
     expose:
       - 8000
     container_name: django
