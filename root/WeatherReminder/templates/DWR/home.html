@@ -22,7 +22,7 @@
                 {% if subscriptions %}
                 {% for city in subscriptions %}
                     <tr>
-                        <th id="name_city"><a href="{% url "city" city.city %}" style="color: black; text-decoration: None">{{ city.city }}</a></th>
+                        <th id="name_city"><a href="{% url "WeatherReminder:city" city.city %}" style="color: black; text-decoration: None">{{ city.city }}</a></th>
                         <th id="temperature_city">{{ city.temperature }}°C</th>
                         <th id="humidity_city">{{ city.humidity }}%</th>
                         <th id="weather_city">{{ city.weather }}</th>

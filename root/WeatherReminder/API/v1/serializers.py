@@ -41,8 +41,8 @@ class UserSerializer(CreateUserSerializer):
     class Meta(CreateUserSerializer.Meta):
         fields = CreateUserSerializer.Meta.fields
         read_only_fields = CreateUserSerializer.Meta.read_only_fields.copy()
-        fields += ('frequency_update', 'notification_is_enable', 'subscriptions')
-        read_only_fields += ['email']
+        fields += ('frequency_update', 'notification_is_enable', 'subscriptions', 'token', 'refresh_token')
+        read_only_fields += ['email', 'token', 'token_refresh']
 
 
 class CreateCitySerializer(serializers.ModelSerializer):

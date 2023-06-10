@@ -6,6 +6,7 @@ __all__ = (
     'SubscriptionsForm',
     'ConfirmEmailForm',
     'AddCityForm',
+    'TokenRefreshForm'
 )
 
 import string
@@ -195,3 +196,25 @@ class AddCityForm(forms.Form):
         if settings.GC.get_cities_by_name(self.data.get('city', '').title().strip()):
             return self.data['city'].title().strip()
         raise ValidationError("That city isn't exist")
+
+
+class TokenRefreshForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('token', 'refresh_token')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['token'].widget.attrs['readonly'] = True
+        self.fields['refresh_token'].widget.attrs['readonly'] = True
+
+        self.helper = FormHelper()
+        self.helper.form_show_labels = False
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            PrependedText('token', 'Access Token'),
+            PrependedText('refresh_token', 'Refresh Token'),
+        )
+        self.helper.add_input(
+            Submit('submit', 'Refresh access token', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary')
+        )

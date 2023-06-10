@@ -2,7 +2,7 @@
 
 <nav class="navbar navbar-light bg-light shadow">
     <div class="container-fluid">
-        <a href="{% url 'home' %}" class="navbar-brand">
+        <a href="{% url 'WeatherReminder:home' %}" class="navbar-brand">
             <img id="faviconMain" src="{% static 'base/img/logo.svg' %}" width="50px" alt="DjangoIco">
             <label> DjangoWeatherReminder</label>
         </a>
@@ -13,14 +13,14 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                 {% if request.user.is_staff %}
-                    <li><a class="dropdown-item" href="/admin/">Admin</a></li
+                    <li><a class="dropdown-item" href="/admin/">Admin</a></li>
                 {% endif %}
-                <li><a class="dropdown-item" href="{% url 'profile' %}">Profile</a></li>
-                <li><a class="dropdown-item" href="/api/v1/">API</a></li>
-                <li><a class="dropdown-item" href="/api/token/">TOKEN</a></li>
-                <li><a class="dropdown-item" href="{% url 'add_city' %}">Search City</a></li>
-                <li><a class="dropdown-item" href="{% url 'subscriptions' %}">Subscriptions</a></li>
-                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                <li><a class="dropdown-item" href="{% url 'WeatherReminder:profile' %}">Profile</a></li>
+                <li><a class="dropdown-item" href="/WeatherReminder/api/v1/">API</a></li>
+                <li><a class="dropdown-item" href="{% url 'WeatherReminder:token' %}">TOKEN</a></li>
+                <li><a class="dropdown-item" href="{% url 'WeatherReminder:add_city' %}">Search City</a></li>
+                <li><a class="dropdown-item" href="{% url 'WeatherReminder:subscriptions' %}">Subscriptions</a></li>
+                <li><a class="dropdown-item" href="{% url 'WeatherReminder:logout' %}">Logout</a></li>
             </ul>
         </li>
         {% endif %}

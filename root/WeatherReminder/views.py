@@ -14,6 +14,13 @@ from . import reminder
 
 
 @login_required
+def get_token(request: WSGIRequest):
+    if request.method == "POST" and (request.POST.get('refresh_token') == request.user.refresh_token):
+        request.user.refresh_access_token()
+    return render(request, 'DWR/token.html', context={'form': forms.TokenRefreshForm(instance=request.user)})
+
+
+@login_required
 def subscriptions(request: WSGIRequest):
     if request.method == "POST":
         form = forms.SubscriptionsForm(request.POST, instance=request.user)
@@ -21,7 +28,7 @@ def subscriptions(request: WSGIRequest):
             return render(request, 'DWR/subscriptions.html.html', context={'form': form})
         form.save()
         reminder.reminder.add_to_queue(models.User.objects.get(email=request.user))
-        return redirect(reverse('home'))
+        return redirect(reverse('WeatherReminder:home'))
     return render(request, 'DWR/subscriptions.html', context={'form': forms.SubscriptionsForm(instance=request.user)})
 
 
@@ -30,7 +37,7 @@ def add_city(request: WSGIRequest):
     if request.method == "POST":
         form = forms.AddCityForm(request.POST)
         if form.is_valid():
-            return redirect(reverse('city', args=[form.cleaned_data['city']]))
+            return redirect(reverse('WeatherReminder:city', args=[form.cleaned_data['city']]))
         return render(request, 'DWR/add_city.html', context={'form': form})
     return render(request, 'DWR/add_city.html', context={'form': forms.AddCityForm()})
 
@@ -68,12 +75,12 @@ def login(request: WSGIRequest):
             return render(request, 'DWR/login.html', status=401, context={'form': form})
 
         if not form.user.is_active:
-            return redirect(reverse('confirm_email', args=[form.cleaned_data['email']]))
+            return redirect(reverse('WeatherReminder:confirm_email', args=[form.cleaned_data['email']]))
 
         user_auth = authenticate(request, email=form.cleaned_data['email'], password=form.cleaned_data.get('password'))
         auth_login(request, user_auth)
 
-        return redirect(reverse('home'))
+        return redirect(reverse('WeatherReminder:home'))
 
     return render(request, 'DWR/login.html', status=401, context={'form': forms.SignInForm()})
 
@@ -84,7 +91,7 @@ def email_confirm(request: WSGIRequest, email):
         user = get_object_or_404(models.User, email=email)
 
         if user.is_active:
-            return redirect(reverse('login'))
+            return redirect(reverse('WeatherReminder:login'))
 
         form = forms.ConfirmEmailForm(request.POST, instance=user)
 
@@ -93,11 +100,11 @@ def email_confirm(request: WSGIRequest, email):
 
         if form.cleaned_data.get('delete_account'):
             user.delete()
-            return redirect(reverse('register'))
+            return redirect(reverse('WeatherReminder:register'))
 
         form.save()
         reminder.reminder.add_to_queue(user)
-        return redirect(reverse('login'))
+        return redirect(reverse('WeatherReminder:login'))
     return render(request, 'DWR/email_confirm.html', context={'email': email, 'form': forms.ConfirmEmailForm()})
 
 
@@ -107,6 +114,6 @@ def register(request):
         form = forms.SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect(reverse('confirm_email', args=[form.cleaned_data.get('email')]))
+            return redirect(reverse('WeatherReminder:confirm_email', args=[form.cleaned_data.get('email')]))
         return render(request, 'DWR/register.html', context={'form': form})
     return render(request, 'DWR/register.html', context={'form': forms.SignUpForm()})

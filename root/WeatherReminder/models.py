@@ -10,7 +10,14 @@ from django.core.mail import send_mail
 from django.utils import timezone
 
 from asgiref.sync import sync_to_async, async_to_sync
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from . import tools
+
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return str(refresh), str(refresh.access_token)
 
 
 class CityNotExist(Exception):
@@ -104,6 +111,7 @@ class UserManager(BaseUserManager):
         user.latest_notifications = timezone.now()
         user.next_notifications = timezone.now() + timedelta(hours=user.frequency_update)
         user.set_password(password)
+        user.refresh_token, user.token = get_tokens_for_user(user)
         user.is_active = kwargs.get('is_active', False)
         return user
 
@@ -134,7 +142,9 @@ class User(AbstractUser):
     objects = UserManager()
 
     username = None
-    email = models.EmailField(verbose_name="email address", max_length=255, unique=True)
+    email = models.EmailField(verbose_name="email address", max_length=256, unique=True)
+    token = models.CharField(verbose_name='access_token', max_length=256)
+    refresh_token = models.CharField('refresh_token', max_length=256)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -162,6 +172,10 @@ class User(AbstractUser):
                 'recipient_list': [self.email],
                 **kwargs}
         threading.Thread(target=send_mail, kwargs=args).start()
+
+    def refresh_access_token(self):
+        self.refresh_token, self.token = get_tokens_for_user(self)
+        self.save()
 
     async def reset_counter_of_recent_notifications(self):
         if self.frequency_update and self.notification_is_enable:

@@ -81,10 +81,10 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_URL = 'logout'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'WeatherReminder:login'
+LOGIN_REDIRECT_URL = 'WeatherReminder:home'
+LOGOUT_URL = 'WeatherReminder:logout'
+LOGOUT_REDIRECT_URL = 'WeatherReminder:login'
 
 # URL NAMESPACE
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
