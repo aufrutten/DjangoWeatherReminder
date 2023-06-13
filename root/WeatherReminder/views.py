@@ -1,16 +1,17 @@
 import asyncio
+from datetime import timedelta
 
-from django.shortcuts import render, reverse, redirect, get_object_or_404, HttpResponse
+from django.shortcuts import render, reverse, redirect, get_object_or_404, HttpResponse, get_list_or_404
 from django.core.handlers.wsgi import WSGIRequest
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
 from django.contrib.auth import login as auth_login
 from asgiref.sync import sync_to_async, async_to_sync
+from django.utils import timezone
 
 from . import forms
 from . import tools
 from . import models
-from . import reminder
 
 
 @login_required
@@ -18,18 +19,6 @@ def get_token(request: WSGIRequest):
     if request.method == "POST" and (request.POST.get('refresh_token') == request.user.refresh_token):
         request.user.refresh_access_token()
     return render(request, 'DWR/token.html', context={'form': forms.TokenRefreshForm(instance=request.user)})
-
-
-@login_required
-def subscriptions(request: WSGIRequest):
-    if request.method == "POST":
-        form = forms.SubscriptionsForm(request.POST, instance=request.user)
-        if not form.is_valid():
-            return render(request, 'DWR/subscriptions.html.html', context={'form': form})
-        form.save()
-        reminder.reminder.add_to_queue(models.User.objects.get(email=request.user))
-        return redirect(reverse('WeatherReminder:home'))
-    return render(request, 'DWR/subscriptions.html', context={'form': forms.SubscriptionsForm(instance=request.user)})
 
 
 @login_required
@@ -45,7 +34,24 @@ def add_city(request: WSGIRequest):
 @login_required
 def city(request: WSGIRequest, city_name):
     city_obj = models.City.objects.get_or_create(city=city_name)[0]
-    return render(request, 'DWR/city.html', context={"city": city_obj})
+    city_obj.update_weather(force_update=False if city_obj.temperature else True)
+    instance_record = models.Subscription.objects.filter(user=request.user, city=city_obj).first()
+    if request.method == "POST":
+        instance_record = models.Subscription.objects.get_or_create(user=request.user, city=city_obj)[0]
+        form = forms.SubscriptionsForm(request.POST, instance=instance_record)
+        if form.is_valid():
+            form.save()
+    form = forms.SubscriptionsForm(instance=instance_record)
+    return render(request, 'DWR/city.html', context={"city": city_obj, 'form': form})
+
+
+@login_required
+def unsubscribe(request: WSGIRequest, city_name):
+    city_obj = models.City.objects.get_or_create(city=city_name)[0]
+    subscription_record = models.Subscription.objects.filter(city=city_obj, user=request.user).first()
+    if subscription_record:
+        subscription_record.delete()
+    return redirect(reverse('WeatherReminder:home'))
 
 
 @login_required
@@ -54,16 +60,14 @@ def profile(request: WSGIRequest):
         form = forms.EditProfileForm(request.POST, instance=request.user)
         if not form.is_valid():
             return render(request, 'DWR/profile.html', context={'form': form})
-        reminder.reminder.add_to_queue(models.User.objects.get(email=request.user))
         form.save()
     return render(request, 'DWR/profile.html', context={'form': forms.EditProfileForm(instance=request.user)})
 
 
 @login_required
 def home(request: WSGIRequest):
-    subscriptions_list = get_object_or_404(models.User, email=request.user).subscriptions.all()
-    queue_list = reminder.reminder.list_of_users
-    return render(request, 'DWR/home.html', context={'subscriptions': subscriptions_list, 'queue_list': queue_list})
+    subscriptions_list = models.Subscription.objects.filter(user=request.user).all()
+    return render(request, 'DWR/home.html', context={'subscriptions': subscriptions_list})
 
 
 @tools.anonymous_required
@@ -103,7 +107,6 @@ def email_confirm(request: WSGIRequest, email):
             return redirect(reverse('WeatherReminder:register'))
 
         form.save()
-        reminder.reminder.add_to_queue(user)
         return redirect(reverse('WeatherReminder:login'))
     return render(request, 'DWR/email_confirm.html', context={'email': email, 'form': forms.ConfirmEmailForm()})
 

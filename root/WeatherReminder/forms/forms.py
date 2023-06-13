@@ -28,7 +28,7 @@ from crispy_forms.bootstrap import PrependedText, PrependedAppendedText, FormAct
 from crispy_bootstrap5.bootstrap5 import FloatingField, Field
 
 from . import fields as custom_fields
-from ..models import User, City
+from ..models import User, City, Subscription
 from .. import tools
 
 
@@ -147,38 +147,33 @@ class EditProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'notification_is_enable', 'frequency_update')
+        fields = ('first_name', 'last_name')
 
     def __init__(self, *args, **kwargs):
-        # TODO: change notification_is_enable field
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_method = 'post'
         self.helper.layout = Layout(
             PrependedText('first_name', 'Name'),
             PrependedText('last_name', 'Surname'),
-            PrependedText('frequency_update', 'Frequency'),
-            Div('notification_is_enable', wrapper_class='checkbox mb-3'),
         )
         self.helper.add_input(Submit('submit', 'Edit', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary'))
         super().__init__(*args, **kwargs)
 
 
 class SubscriptionsForm(forms.ModelForm):
-    subscriptions = forms.ModelMultipleChoiceField(queryset=City.objects.all(),
-                                                   widget=forms.CheckboxSelectMultiple)
 
     class Meta:
-        model = User
-        fields = ('subscriptions',)
+        model = Subscription
+        fields = ('frequency_update',)
 
     def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_show_labels = False
         self.helper.form_method = 'post'
-        self.helper.layout = Layout()
-        self.helper.add_input(Submit('submit', 'Edit', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary'))
-        super().__init__(*args, **kwargs)
+        self.helper.layout = Layout(Div('frequency_update'))
+        self.helper.add_input(Submit('submit', 'Update', css_class='w-100 mb-2 btn btn-lg rounded-3'))
 
 
 class AddCityForm(forms.Form):
@@ -188,7 +183,7 @@ class AddCityForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.helper = FormHelper()
         self.helper.form_show_labels = False
-        self.helper.layout = Layout(Field('city', placeholder='Enter'))
+        self.helper.layout = Layout(Field('city', placeholder='Enter city'))
         self.helper.add_input(Submit('submit', 'Search', css_class='w-100 mb-2 btn btn-lg rounded-3 btn-primary'))
         super().__init__(*args, **kwargs)
 

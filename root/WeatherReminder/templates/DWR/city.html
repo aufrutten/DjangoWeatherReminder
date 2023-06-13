@@ -35,7 +35,10 @@
                     <th id="humidity_city">{{ city.humidity }}%</th>
                 </tr>
             </table>
+            {% crispy form %}
             <hr class="my-4">
+            <small class="text-muted">By clicking update you automatically subscribe it</small><br>
+            <small class="text-muted">For unsubscribe click <a href="{% url 'WeatherReminder:unsubscribe_city' city %}">here</a></small><br>
             <small class="text-muted">Latest update has been {{ city.last_update }}</small><br>
         </div>
         {% endif %}

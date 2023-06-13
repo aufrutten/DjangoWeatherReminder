@@ -9,12 +9,17 @@ services:
     expose:
       - 8000
     container_name: django
+    depends_on:
+      - redis
+    command: ./docker-cmd/start_prod
 
   nginx_http:
     container_name: nginx_http
     image: nginx:latest
     depends_on:
       django:
+        condition: service_started
+      redis:
         condition: service_started
     ports:
       - "80:80"
@@ -59,6 +64,30 @@ services:
       - ./nginx/prod/nginx-ssl.conf:/etc/nginx/nginx.conf
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+
+  redis:
+    image: redis
+    container_name: redis
+    expose:
+      - 6379
+
+  celery_worker:
+    build: .
+    command: ./docker-cmd/start_celery_worker
+    container_name: celery_worker
+    volumes:
+      - .:/django
+    depends_on:
+      - redis
+
+  celery_beat:
+    build: .
+    command: ./docker-cmd/start_celery_beat
+    container_name: celery_beat
+    volumes:
+      - .:/django
+    depends_on:
+      - redis
 
 volumes:
   static:

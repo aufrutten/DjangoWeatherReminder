@@ -1,23 +1,38 @@
 import threading
 from datetime import timedelta
+import json
 
-from django.db import models
+from django.db import models, transaction
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.template.loader import render_to_string
 
 from asgiref.sync import sync_to_async, async_to_sync
 from rest_framework_simplejwt.tokens import RefreshToken
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 from . import tools
+from .tasks import send_email_celery
 
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return str(refresh), str(refresh.access_token)
+
+
+def create_task_func(self):
+    schedule = IntervalSchedule.objects.get_or_create(every=self.frequency_update, period=IntervalSchedule.HOURS)[0]
+    task = PeriodicTask.objects.create(name=str(self),
+                                       task='send_notification_to_user',
+                                       interval=schedule,
+                                       start_time=timezone.now(),
+                                       args=json.dumps([self.user.email, self.city.city]))
+    task.save()
+    return task
 
 
 class CityNotExist(Exception):
@@ -27,7 +42,7 @@ class CityNotExist(Exception):
 class CityQuerySet(models.query.QuerySet):
 
     def create(self, **kwargs):
-        kwargs['_last_update'] = timezone.now()
+        kwargs['last_update'] = timezone.now()
         kwargs['city'] = kwargs.get('city', '').title().strip()
         if settings.GC.get_cities_by_name(kwargs['city']):
             return super().create(**kwargs)
@@ -51,65 +66,41 @@ class City(models.Model):
     id = models.BigAutoField(primary_key=True, auto_created=True)
     city = models.CharField(max_length=64, null=False, unique=True)
 
-    _last_update = models.DateTimeField(null=True)
-    _weather = models.CharField(max_length=64, blank=True, null=True)
-    _temperature = models.FloatField(blank=True, null=True)
-    _humidity = models.FloatField(blank=True, null=True)
+    last_update = models.DateTimeField(null=True)
+    weather = models.CharField(max_length=64, blank=True, null=True)
+    temperature = models.FloatField(blank=True, null=True)
+    humidity = models.FloatField(blank=True, null=True)
 
     def __str__(self):
-        self.update_weather(force_update=False if self._weather else True)
+        self.update_weather(force_update=False if self.weather else True)
         return f'{self.city}'
 
     def update_weather(self, force_update=False):
-        if timezone.now() >= (self._last_update + settings.FREQUENCY_UPDATE_DATA) or force_update:
+        if timezone.now() >= (self.last_update + settings.FREQUENCY_UPDATE_DATA) or force_update:
             city_weather_manager = settings.MGR.weather_at_place(self.city).weather
-            self._temperature = city_weather_manager.temperature('celsius')['temp']
-            self._humidity = city_weather_manager.humidity
-            self._weather = city_weather_manager.detailed_status
-            self._last_update = timezone.now()
+            self.temperature = city_weather_manager.temperature('celsius')['temp']
+            self.humidity = city_weather_manager.humidity
+            self.weather = city_weather_manager.detailed_status
+            self.last_update = timezone.now()
             self.save()
-
-    @property
-    def last_update(self):
-        self.update_weather(force_update=False if self._last_update else True)
-        return self._last_update
-
-    @property
-    def temperature(self):
-        self.update_weather(force_update=False if self._temperature else True)
-        return self._temperature
-
-    @property
-    def humidity(self):
-        self.update_weather(force_update=False if self._humidity else True)
-        return self._humidity
-
-    @property
-    def weather(self):
-        self.update_weather(force_update=False if self._weather else True)
-        return self._weather
 
 
 class UserManager(BaseUserManager):
 
     @staticmethod
-    def message_with_code_confirm(user):
-        mail_message = f"Good day! Mr/Miss {user.last_name}\n" \
-                       f"Your email: {user.email} has indicated in registration form\n" \
-                       f"If it wasn't you don't do nothing\n" \
-                       f"\n" \
-                       f"Confirm Code: {user.code_confirm}\n" \
-                       f"\n" \
-                       f"Have a nice day! aufrutten.com"
-        return mail_message
+    def html_with_code_confirm(user):
+        title = f'Welcome, {user.first_name}'
+        text = f"You're receiving this message because you recently signed up for a account." \
+               f"<br><br>Confirm your email address by clicking the button below. " \
+               f"This step adds extra security to your business by verifying you own this email." \
+               f"<br><br>Confirm code {user.code_confirm}"
+        return render_to_string('DWR/email.html', {'message': {'title': title, 'text': text}})
 
     def _create_user(self, email, password=None, **kwargs):
         if not email:
             raise ValueError("Users must have an email address")
         user = self.model(email=self.normalize_email(email), **kwargs)
         user.code_confirm = tools.generate_code()
-        user.latest_notifications = timezone.now()
-        user.next_notifications = timezone.now() + timedelta(hours=user.frequency_update)
         user.set_password(password)
         user.refresh_token, user.token = get_tokens_for_user(user)
         user.is_active = kwargs.get('is_active', False)
@@ -117,8 +108,8 @@ class UserManager(BaseUserManager):
 
     def create_user(self, email, password=None, **kwargs):
         user = self._create_user(email, password, **kwargs)
-        subject, message = 'AufruttenWeatherReminder', self.message_with_code_confirm(user)
-        user.email_user(subject=subject, message=message)
+        subject, html_content = 'AufruttenWeatherReminder', self.html_with_code_confirm(user)
+        user.email_user(subject=subject, message='', html_message=html_content)
         user.save(using=self._db)
         return user
 
@@ -143,54 +134,51 @@ class User(AbstractUser):
 
     username = None
     email = models.EmailField(verbose_name="email address", max_length=256, unique=True)
-    token = models.CharField(verbose_name='access_token', max_length=256)
-    refresh_token = models.CharField('refresh_token', max_length=256)
+    code_confirm = models.CharField(null=True, max_length=6)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
-    code_confirm = models.CharField(null=True, max_length=6)
-    subscriptions = models.ManyToManyField("City", blank=True)
-
-    notification_is_enable = models.BooleanField(default=True)
-    frequency_update = models.IntegerField(choices=((1, 1), (3, 3), (6, 6), (12, 12)), default=1, null=False)
-    latest_notifications = models.DateTimeField()
-    next_notifications = models.DateTimeField()
+    token = models.CharField(verbose_name='access token', max_length=256)
+    refresh_token = models.CharField(verbose_name='refresh token', max_length=256)
+    latest_token_update = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f'{self.email}'
 
-    def __lt__(self, other):
-        if not isinstance(other, User):
-            raise TypeError('must use Weather.models.User model')
-        return self.next_notifications < other.next_notifications
-
     def email_user(self, subject, message, from_email=None, **kwargs):
-        args = {'subject': subject,
-                'message': message,
-                'from_email': from_email,
-                'recipient_list': [self.email],
-                **kwargs}
-        threading.Thread(target=send_mail, kwargs=args).start()
+        send_email_celery.delay(subject, message, from_email, recipient_list=[self.email], **kwargs)
 
     def refresh_access_token(self):
         self.refresh_token, self.token = get_tokens_for_user(self)
+        self.latest_token_update = timezone.now()
         self.save()
 
-    async def reset_counter_of_recent_notifications(self):
-        if self.frequency_update and self.notification_is_enable:
-            self.latest_notifications = timezone.now()
-            self.next_notifications = timezone.now() + timedelta(hours=self.frequency_update)
-            await self.asave()
 
-    async def send_notifications(self):
-        if timezone.now() >= self.next_notifications and await self.subscriptions.afirst() and self.is_active:
-            response = await sync_to_async(self.generate_response)()
-            await sync_to_async(self.email_user)("DjangoWeatherReminder Notification", response)
-        await self.reset_counter_of_recent_notifications()
+class Subscription(models.Model):
 
-    def generate_response(self):
-        response = []
-        for city in self.subscriptions.all():
-            response.append(f'{city.city}: weather: {city.weather} temp: {city.temperature}\n')
-        return '\n'.join(response)
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    city = models.ForeignKey('City', on_delete=models.CASCADE)
+    frequency_update = models.IntegerField(choices=((1, 1), (3, 3), (6, 6), (12, 12)), default=1, null=False)
+    task = models.OneToOneField(PeriodicTask, null=True, blank=True, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['user', 'city']
+
+    def __str__(self):
+        return f'{self.user}:{self.city}'
+    
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        with transaction.atomic():
+            if self.task:
+                self.task.interval.every = self.frequency_update
+                self.task.interval.save()
+                return super().save(force_insert, force_update, using, update_fields)
+
+            self.task = create_task_func(self)
+            return super().save(force_insert, force_update, using, update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        task = PeriodicTask.objects.filter(name=str(self)).first()
+        task.delete()
+        super().delete(using, keep_parents)

@@ -16,8 +16,9 @@
             <br>
             {% crispy form %}
             <hr class="my-4">
-            <small class="text-muted">Latest notifications was {{ request.user.latest_notifications }}</small><br>
-            <small class="text-muted">Following notifications {{ request.user.next_notifications }}</small>
+            <small class="text-muted">Account has created {{ request.user.date_joined }}</small><br>
+            <small class="text-muted">Last login was {{ request.user.last_login }}</small><br>
+            <small class="text-muted">Last refresh token was {{ request.user.latest_token_update }}</small>
         </div>
     </div>
 </div>

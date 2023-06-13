@@ -12,3 +12,8 @@ class CityModel(admin.ModelAdmin):
 @admin.register(models.User)
 class UserModel(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.Subscription)
+class UserSubscriptionModel(admin.ModelAdmin):
+    pass

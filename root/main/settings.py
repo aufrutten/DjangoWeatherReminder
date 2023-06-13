@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'crispy_bootstrap5',
     'social_django',
+    'django_celery_beat',
 )
 
 MIDDLEWARE = (
@@ -242,4 +243,13 @@ GC = geonamescache.GeonamesCache()
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
+# Celery Configuration Options
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_TIMEZONE = "Europe/Berlin"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
 
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

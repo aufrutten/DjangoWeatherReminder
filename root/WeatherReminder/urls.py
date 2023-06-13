@@ -38,5 +38,5 @@ urlpatterns = [
 
     path('city/', views.add_city, name='add_city'),
     path('city/<str:city_name>', views.city, name="city"),
-    path('subscriptions/', views.subscriptions, name='subscriptions'),
+    path('unsubscribe/<str:city_name>', views.unsubscribe, name="unsubscribe_city"),
 ]

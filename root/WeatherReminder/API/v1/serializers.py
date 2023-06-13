@@ -3,7 +3,6 @@ from django.conf import settings
 from rest_framework import serializers
 
 from WeatherReminder.models import User, City
-import WeatherReminder.reminder
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -22,13 +21,6 @@ class CreateUserSerializer(serializers.ModelSerializer):
         if validated_data.get('password'):
             instance.set_password(validated_data.get('password'))
             del validated_data['password']
-
-        if validated_data.get('notification_is_enable'):
-            WeatherReminder.reminder.reminder.add_to_queue(instance)
-
-        else:
-            WeatherReminder.reminder.reminder.remove_from_queue(instance)
-
         return super().update(instance, validated_data)
 
     def create(self, validated_data):
@@ -41,8 +33,8 @@ class UserSerializer(CreateUserSerializer):
     class Meta(CreateUserSerializer.Meta):
         fields = CreateUserSerializer.Meta.fields
         read_only_fields = CreateUserSerializer.Meta.read_only_fields.copy()
-        fields += ('frequency_update', 'notification_is_enable', 'subscriptions', 'token', 'refresh_token')
-        read_only_fields += ['email', 'token', 'token_refresh']
+        fields += ('token', 'refresh_token')
+        read_only_fields += ['email', 'token', 'refresh_token']
 
 
 class CreateCitySerializer(serializers.ModelSerializer):

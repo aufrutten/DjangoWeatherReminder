@@ -37,3 +37,4 @@ etc/
 data/
 certbot/
 certbot_www/
+*celerybeat-schedule
