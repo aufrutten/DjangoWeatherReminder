@@ -57,10 +57,8 @@ services:
         condition: service_completed_successfully
     ports:
       - "443:443"
-      - "80:80"
     expose:
       - 443
-      - 80
     volumes:
       - static:/var/www/html/static/
       - ./nginx/prod/nginx-ssl.conf:/etc/nginx/nginx.conf
