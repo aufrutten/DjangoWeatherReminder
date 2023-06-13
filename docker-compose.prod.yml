@@ -53,6 +53,8 @@ services:
         condition: service_started
       certbot:
         condition: service_completed_successfully
+      nginx_http:
+        condition: service_completed_successfully
     ports:
       - "443:443"
       - "80:80"
