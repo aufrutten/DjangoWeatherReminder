@@ -1,6 +1,13 @@
 version: "3.8"
 
 services:
+  migration:
+    build: .
+    volumes:
+      - .:/django
+    container_name: migration_database
+    command: ./docker-cmd/start_database
+
   django:
     build: .
     volumes:
@@ -10,7 +17,10 @@ services:
       - 8000
     container_name: django
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     command: ./docker-cmd/start_prod
 
   nginx_http:
@@ -20,7 +30,9 @@ services:
       django:
         condition: service_started
       redis:
-        condition: service_started
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     ports:
       - "80:80"
     expose:
@@ -52,7 +64,9 @@ services:
       django:
         condition: service_started
       certbot:
-        condition: service_completed_successfully
+        condition: service_started
+      redis:
+        condition: service_healthy
     ports:
       - "443:443"
     expose:
@@ -68,6 +82,14 @@ services:
     container_name: redis
     expose:
       - 6379
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    depends_on:
+      migration:
+        condition: service_completed_successfully
 
   celery_worker:
     build: .
@@ -76,7 +98,10 @@ services:
     volumes:
       - .:/django
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      django:
+        condition: service_started
 
   celery_beat:
     build: .
@@ -85,7 +110,10 @@ services:
     volumes:
       - .:/django
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
+      django:
+        condition: service_started
 
 volumes:
   static:

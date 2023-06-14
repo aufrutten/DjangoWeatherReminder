@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python3 root/manage.py migrate
+python3 root/manage.py collectstatic --noinput

@@ -91,7 +91,7 @@ class UserManager(BaseUserManager):
     def html_with_code_confirm(user):
         title = f'Welcome, {user.first_name}'
         text = f"You're receiving this message because you recently signed up for a account." \
-               f"<br><br>Confirm your email address by clicking the button below. " \
+               f"<br><br>Confirm your email address by coping confirm code below. " \
                f"This step adds extra security to your business by verifying you own this email." \
                f"<br><br>Confirm code {user.code_confirm}"
         return render_to_string('DWR/email.html', {'message': {'title': title, 'text': text}})
