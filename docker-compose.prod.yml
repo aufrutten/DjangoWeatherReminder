@@ -8,6 +8,16 @@ services:
     container_name: migration_database
     command: ./docker-cmd/start_database
 
+  test:
+    build: .
+    volumes:
+      - .:/django
+    container_name: tests_django
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    command: ./docker-cmd/start_tests
+
   django:
     build: .
     volumes:
@@ -20,6 +30,8 @@ services:
       redis:
         condition: service_healthy
       migration:
+        condition: service_completed_successfully
+      test:
         condition: service_completed_successfully
     command: ./docker-cmd/start_prod
 
@@ -89,6 +101,8 @@ services:
       retries: 30
     depends_on:
       migration:
+        condition: service_completed_successfully
+      test:
         condition: service_completed_successfully
 
   celery_worker:
