@@ -7,3 +7,4 @@ from . import views
 router = DefaultRouter()
 router.register(r'citys', views.CityViewSet, basename='city')
 router.register(r'users', views.UserViewSet, basename='user')
+router.register(r'subscriptions', views.SubscriptionViewSet, basename='subscription')

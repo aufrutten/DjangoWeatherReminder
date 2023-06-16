@@ -2,7 +2,14 @@ from django.contrib.auth.password_validation import validate_password as val_pas
 from django.conf import settings
 from rest_framework import serializers
 
-from WeatherReminder.models import User, City
+
+from WeatherReminder.models import User, City, Subscription
+
+
+def validate_city_func(value):
+    if settings.GC.get_cities_by_name(value.title().strip()):
+        return value.title().strip()
+    raise serializers.ValidationError("That city isn't exist")
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -45,9 +52,7 @@ class CreateCitySerializer(serializers.ModelSerializer):
         read_only_fields = ['temperature', 'humidity', 'weather', 'last_update']
 
     def validate_city(self, value):
-        if settings.GC.get_cities_by_name(value.title()):
-            return value.title()
-        raise serializers.ValidationError("That city isn't exist")
+        return validate_city_func(value)
 
 
 class CitySerializer(CreateCitySerializer):
@@ -56,3 +61,22 @@ class CitySerializer(CreateCitySerializer):
         read_only_fields = CreateCitySerializer.Meta.read_only_fields.copy()
         read_only_fields += ['city']
 
+
+class CreateSubscriptionSerializer(serializers.ModelSerializer):
+    city = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = Subscription
+        fields = ('city', 'user')
+        read_only_fields = ['user']
+
+    def validate_city(self, value):
+        validate_city_func(value)
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    city = CitySerializer()
+
+    class Meta:
+        model = Subscription
+        fields = ('id', 'city')

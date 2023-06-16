@@ -1,15 +1,17 @@
 from rest_framework import viewsets
-from rest_framework import views
+from rest_framework import views, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, permission_classes
-from rest_framework import serializers
+from rest_framework import serializers, mixins, generics
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from WeatherReminder.models import User, City
+from WeatherReminder.models import User, City, Subscription
 from .serializers import (UserSerializer,
                           CreateUserSerializer,
                           CitySerializer,
-                          CreateCitySerializer)
+                          CreateCitySerializer,
+                          SubscriptionSerializer,
+                          CreateSubscriptionSerializer)
 
 from .permissions import (AllowAny,
                           IsAdminUser,
@@ -21,30 +23,24 @@ from .permissions import (AllowAny,
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
+    queryset = User.objects
     serializer_class = UserSerializer
-
-    def get_queryset(self):
-        if self.request.user.is_superuser:
-            return self.queryset
-        return self.queryset.filter(email=self.request.user)
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
-        if self.request.method == 'POST':
+        if self.action == 'create':
             serializer_class = CreateUserSerializer
         return serializer_class
 
     def get_permissions(self):
-        if self.request.method in ("OPTIONS", "HEAD", "GET"):
-            return [AllowAny()]
-        if self.request.method == "POST":
+        if self.action == 'list':
+            return [IsAdminUser()]
+        if self.action == 'create':
             return [IsAnonymousOnly()]
-        return [IsAuthenticated()]
+        return [IsOwnerOrAdmin()]
 
-    @action(detail=False, methods=['get', 'update', 'put', 'options'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get', 'update', 'put', 'options'], permission_classes=[IsAuthenticated()])
     def me(self, request):
-        print(self.request.method)
         if self.request.method == "PUT":
             user = UserSerializer(instance=get_object_or_404(User, email=request.user),
                                   context={'request': request},
@@ -66,3 +62,32 @@ class CityViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             serializer_class = CreateCitySerializer
         return serializer_class
+
+
+class SubscriptionViewSet(mixins.DestroyModelMixin,
+                          mixins.ListModelMixin,
+                          mixins.CreateModelMixin,
+                          mixins.RetrieveModelMixin,
+                          viewsets.GenericViewSet):
+    queryset = Subscription.objects
+    serializer_class = SubscriptionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method == 'POST':
+            serializer_class = CreateSubscriptionSerializer
+        return serializer_class
+
+    def create(self, request, *args, **kwargs):
+        user = get_object_or_404(User, email=request.user)
+        self.get_serializer_class()(data=request.data).is_valid(raise_exception=True)
+        city, created = City.objects.get_or_create(city=request.data['city'])
+        city.update_weather()
+        subscription, created = Subscription.objects.get_or_create(user=user, city=city)
+        serializer = CitySerializer(instance=subscription)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
