@@ -11,7 +11,8 @@ from .serializers import (UserSerializer,
                           CitySerializer,
                           CreateCitySerializer,
                           SubscriptionSerializer,
-                          CreateSubscriptionSerializer)
+                          CreateSubscriptionSerializer,
+                          UpdateSubscriptionSerializer)
 
 from .permissions import (AllowAny,
                           IsAdminUser,
@@ -64,11 +65,7 @@ class CityViewSet(viewsets.ModelViewSet):
         return serializer_class
 
 
-class SubscriptionViewSet(mixins.DestroyModelMixin,
-                          mixins.ListModelMixin,
-                          mixins.CreateModelMixin,
-                          mixins.RetrieveModelMixin,
-                          viewsets.GenericViewSet):
+class SubscriptionViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects
     serializer_class = SubscriptionSerializer
     permission_classes = [IsAuthenticated]
@@ -78,16 +75,23 @@ class SubscriptionViewSet(mixins.DestroyModelMixin,
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
-        if self.request.method == 'POST':
+        if self.action == 'create':
             serializer_class = CreateSubscriptionSerializer
+        if self.action == 'update':
+            serializer_class = UpdateSubscriptionSerializer
         return serializer_class
 
     def create(self, request, *args, **kwargs):
-        user = get_object_or_404(User, email=request.user)
-        self.get_serializer_class()(data=request.data).is_valid(raise_exception=True)
-        city, created = City.objects.get_or_create(city=request.data['city'])
-        city.update_weather()
-        subscription, created = Subscription.objects.get_or_create(user=user, city=city)
-        serializer = CitySerializer(instance=subscription)
-        headers = self.get_success_headers(serializer.data)
+        self.get_serializer_class()(data=request.data).is_valid(raise_exception=True)  # check validation
+
+        user = get_object_or_404(User, email=request.user)  # getting user instance
+        city, created = City.objects.get_or_create(city=request.data['city'])  # get or create city instance
+        city.update_weather()  # updating weather with the rules in JSON config of APP
+
+        subscription, created = Subscription.objects.get_or_create(user=user, city=city)  # get exist or create new subs
+        subscription.frequency_update = request.data['frequency_update']  # adding frequency from user input
+        subscription.save()  # saving the instance
+
+        serializer = CitySerializer(instance=subscription)  # insert instance for JSON representation
+        headers = self.get_success_headers(serializer.data)  # getting the headers
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

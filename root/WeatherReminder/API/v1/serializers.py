@@ -67,11 +67,18 @@ class CreateSubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ('city', 'user')
+        fields = ('city', 'user', 'frequency_update')
         read_only_fields = ['user']
 
     def validate_city(self, value):
         validate_city_func(value)
+
+
+class UpdateSubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = ('id', 'city', 'user', 'frequency_update')
+        read_only_fields = ['id', 'city', 'user']
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -79,4 +86,4 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ('id', 'city')
+        fields = ('id', 'city', 'frequency_update')
