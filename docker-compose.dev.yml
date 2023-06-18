@@ -5,6 +5,7 @@ services:
     build: .
     volumes:
       - .:/django
+      - static:/django/root/staticfiles
     container_name: migration_database
     command: ./docker-cmd/start_database
 
@@ -12,6 +13,7 @@ services:
     build: .
     volumes:
       - .:/django
+      - static:/django/root/staticfiles
     container_name: tests_django
     depends_on:
       migration:
