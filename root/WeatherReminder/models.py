@@ -14,25 +14,14 @@ from django.template.loader import render_to_string
 from asgiref.sync import sync_to_async, async_to_sync
 from rest_framework_simplejwt.tokens import RefreshToken
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
+from celery import current_app as celery_current_app
 
 from . import tools
-from .tasks import send_email_celery
 
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
     return str(refresh), str(refresh.access_token)
-
-
-def create_task_func(self):
-    schedule = IntervalSchedule.objects.get_or_create(every=self.frequency_update, period=IntervalSchedule.HOURS)[0]
-    task = PeriodicTask.objects.create(name=str(self),
-                                       task='send_notification_to_user',
-                                       interval=schedule,
-                                       start_time=timezone.now(),
-                                       args=json.dumps([self.user.email, self.city.city]))
-    task.save()
-    return task
 
 
 class CityNotExist(Exception):
@@ -76,6 +65,10 @@ class City(models.Model):
         return f'{self.city}'
 
     def update_weather(self, force_update=False):
+        """update weather for city by rules in JSON config of APP"""
+        # check diff between last update of that city and now
+        # if diff more that rule in my JSON config, do update weather for that city, not for user
+        # and that func will trigger when, user get the instance of that city, like in API or in part of UI or Reminder
         if timezone.now() >= (self.last_update + settings.FREQUENCY_UPDATE_DATA) or force_update:
             city_weather_manager = settings.MGR.weather_at_place(self.city).weather
             self.temperature = city_weather_manager.temperature('celsius')['temp']
@@ -89,6 +82,7 @@ class UserManager(BaseUserManager):
 
     @staticmethod
     def html_with_code_confirm(user):
+        """rendering html for registration form for retrieve code confirm"""
         title = f'Welcome, {user.first_name}'
         text = f"You're receiving this message because you recently signed up for a account." \
                f"<br><br>Confirm your email address by coping confirm code below. " \
@@ -147,9 +141,15 @@ class User(AbstractUser):
         return f'{self.email}'
 
     def email_user(self, subject, message, from_email=None, **kwargs):
-        send_email_celery.delay(subject, message, from_email, recipient_list=[self.email], **kwargs)
+        """async sending email for user by rewriting the original function"""
+        kwargs['subject'] = subject
+        kwargs['message'] = message
+        kwargs['from_email'] = from_email
+        kwargs['recipient_list'] = [self.email]
+        celery_current_app.send_task('celery_async_send_email', kwargs)
 
     def refresh_access_token(self):
+        """refresh access token and update refresh token"""
         self.refresh_token, self.token = get_tokens_for_user(self)
         self.latest_token_update = timezone.now()
         self.save()
@@ -175,10 +175,20 @@ class Subscription(models.Model):
                 self.task.interval.save()
                 return super().save(force_insert, force_update, using, update_fields)
 
-            self.task = create_task_func(self)
+            self.task = self.__create_task_func()
             return super().save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):
         task = PeriodicTask.objects.filter(name=str(self)).first()
         task.delete()
         super().delete(using, keep_parents)
+
+    def __create_task_func(self):
+        schedule = IntervalSchedule.objects.get_or_create(every=self.frequency_update, period=IntervalSchedule.HOURS)[0]
+        task = PeriodicTask.objects.get_or_create(name=str(self),
+                                                  task='send_notification_to_user',
+                                                  interval=schedule,
+                                                  start_time=timezone.now(),
+                                                  args=json.dumps([self.user.email, self.city.city]))
+        task.save()
+        return task
