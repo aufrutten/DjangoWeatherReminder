@@ -146,7 +146,7 @@ class User(AbstractUser):
         kwargs['message'] = message
         kwargs['from_email'] = from_email
         kwargs['recipient_list'] = [self.email]
-        celery_current_app.send_task('celery_async_send_email', kwargs)
+        celery_current_app.send_task('celery_async_send_email', (), kwargs)
 
     def refresh_access_token(self):
         """refresh access token and update refresh token"""
@@ -160,7 +160,6 @@ class Subscription(models.Model):
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     city = models.ForeignKey('City', on_delete=models.CASCADE)
     frequency_update = models.IntegerField(choices=((1, 1), (3, 3), (6, 6), (12, 12)), default=1, null=False)
-    task = models.OneToOneField(PeriodicTask, null=True, blank=True, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['user', 'city']
@@ -170,25 +169,17 @@ class Subscription(models.Model):
     
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         with transaction.atomic():
-            if self.task:
-                self.task.interval.every = self.frequency_update
-                self.task.interval.save()
-                return super().save(force_insert, force_update, using, update_fields)
-
-            self.task = self.__create_task_func()
+            self.create_task_func()
             return super().save(force_insert, force_update, using, update_fields)
 
-    def delete(self, using=None, keep_parents=False):
-        task = PeriodicTask.objects.filter(name=str(self)).first()
-        task.delete()
-        super().delete(using, keep_parents)
-
-    def __create_task_func(self):
+    def create_task_func(self):
+        """creating or getting periodic task"""
         schedule = IntervalSchedule.objects.get_or_create(every=self.frequency_update, period=IntervalSchedule.HOURS)[0]
-        task = PeriodicTask.objects.get_or_create(name=str(self),
-                                                  task='send_notification_to_user',
-                                                  interval=schedule,
-                                                  start_time=timezone.now(),
-                                                  args=json.dumps([self.user.email, self.city.city]))
+        task, created = PeriodicTask.objects.get_or_create(name=f'{self.user}:{self.frequency_update}H',
+                                                           task='send_notification_to_user',
+                                                           interval=schedule)
+        if created:
+            task.start_time = timezone.now()
+            task.args = json.dumps([self.user.email, self.frequency_update])
         task.save()
         return task
