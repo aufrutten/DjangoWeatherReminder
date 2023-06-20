@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
-from rest_framework.settings import api_settings
+from rest_framework.settings import DEFAULTS as REST_FRAMEWORK
 
 from pyowm import OWM
 import geonamescache
@@ -36,7 +36,7 @@ SECRET_KEY = DJANGO_CONFIG["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if DJANGO_CONFIG["DEBUG"] == "True" else False
 
-ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('*', )
+ALLOWED_HOSTS = tuple(DJANGO_CONFIG["ALLOWED_HOSTS"]) if DEBUG is False else ('*',)
 
 # HTTPS
 # CSRF_COOKIE_SECURE = False if DEBUG else True
@@ -221,16 +221,10 @@ DEFAULT_FROM_EMAIL = DJANGO_CONFIG['EMAIL']
 EMAIL_HOST_PASSWORD = DJANGO_CONFIG['EMAIL_PASSWORD']
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        api_settings.DEFAULT_AUTHENTICATION_CLASSES,
-    ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        api_settings.DEFAULT_FILTER_BACKENDS,
-    ],
+REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] += ['rest_framework_simplejwt.authentication.JWTAuthentication']
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=90)
 }
 
 OWN = OWM(DJANGO_CONFIG["OWM_TOKEN_KEY"])

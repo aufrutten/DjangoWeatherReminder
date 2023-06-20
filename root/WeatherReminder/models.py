@@ -19,11 +19,6 @@ from celery import current_app as celery_current_app
 from . import tools
 
 
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return str(refresh), str(refresh.access_token)
-
-
 class CityNotExist(Exception):
     pass
 
@@ -61,7 +56,6 @@ class City(models.Model):
     humidity = models.FloatField(blank=True, null=True)
 
     def __str__(self):
-        self.update_weather(force_update=False if self.weather else True)
         return f'{self.city}'
 
     def update_weather(self, force_update=False):
@@ -96,7 +90,6 @@ class UserManager(BaseUserManager):
         user = self.model(email=self.normalize_email(email), **kwargs)
         user.code_confirm = tools.generate_code()
         user.set_password(password)
-        user.refresh_token, user.token = get_tokens_for_user(user)
         user.is_active = kwargs.get('is_active', False)
         return user
 
@@ -105,6 +98,7 @@ class UserManager(BaseUserManager):
         subject, html_content = 'AufruttenWeatherReminder', self.html_with_code_confirm(user)
         user.email_user(subject=subject, message='', html_message=html_content)
         user.save(using=self._db)
+        user.refresh_access_token()
         return user
 
     async def acreate_user(self, email, password=None, **kwargs):
@@ -112,6 +106,7 @@ class UserManager(BaseUserManager):
         subject, message = 'AufruttenWeatherReminder', self.message_with_code_confirm(user)
         await sync_to_async(user.email_user)(subject=subject, message=message)
         await user.asave(using=self._db)
+        await sync_to_async(user.refresh_access_token)()
         return user
 
     def create_superuser(self, email, password=None):
@@ -120,6 +115,7 @@ class UserManager(BaseUserManager):
         user.is_superuser = True
         user.is_active = True
         user.save(using=self._db)
+        user.refresh_access_token()
         return user
 
 
@@ -150,7 +146,8 @@ class User(AbstractUser):
 
     def refresh_access_token(self):
         """refresh access token and update refresh token"""
-        self.refresh_token, self.token = get_tokens_for_user(self)
+        refresh = RefreshToken.for_user(self)
+        self.refresh_token, self.token = str(refresh), str(refresh.access_token)
         self.latest_token_update = timezone.now()
         self.save()
 
